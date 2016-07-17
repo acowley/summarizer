@@ -20,12 +20,20 @@ import qualified Data.Vector as V
 -- | Break a 'Text' into sentences.
 sentences :: Text -> Vector Text
 sentences = V.fromList
+          . fixups
           . filter (not . T.null)
           . map simpleSpaces
           . foldMap (T.splitOn "\n\n")
           . T.split (`elem` ['.','?','!'])
           . T.filter (/= '\r')
   where simpleSpaces = T.intercalate " " . T.words
+        fixups [] = []
+        fixups [x] = [x]
+        fixups (x:y:ss)
+          | any (`T.isSuffixOf` x)
+                ["Ms", "Mrs", "Mz", "Mr", "St", "Dr"] =
+            fixups (T.append (T.append x ". ") y : ss)
+          | otherwise = x : fixups (y:ss)
 
 wordRoot :: Text -> Text
 wordRoot = T.toLower . T.takeWhile isAlpha
