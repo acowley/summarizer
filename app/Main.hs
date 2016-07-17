@@ -19,5 +19,5 @@ main = do args <- getArgs
             [readMaybe -> Just n] -> T.interact (go n)
             _ -> putStrLn "Usage: summarize [maxSentences]\nInput is read from stdin."
   where go n t = let popWords = popularWords 100 (wordFreq englishStopWords t)
-                 in T.intercalate ".\n\n" $
+                 in foldMap (`T.append` ".\n\n" ) $
                     pickSentences n popWords (sentences t)
